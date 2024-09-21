@@ -10,8 +10,13 @@ function parseCsv(filename) {
     fs.createReadStream(path.join(__dirname, '..', '..', 'data', filename))
       .pipe(csv())
       .on('data', (row) => {
-        const player = new Player(row.Name, row.Position);
-        players.push(player);
+        // Check if both Name and Position exist in the row
+        if (row.Name && row.Position) {
+          const player = new Player(row.Name, row.Position);
+          players.push(player);
+        } else {
+          logger.warn(`Skipping row due to missing Name or Position: ${JSON.stringify(row)}`);
+        }
       })
       .on('end', () => {
         logger.info(`CSV file successfully processed, ${players.length} players loaded`);
