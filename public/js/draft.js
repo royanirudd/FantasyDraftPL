@@ -15,6 +15,8 @@ const draftedPlayersElement = document.getElementById('draft-list');
 const finalResultsElement = document.getElementById('final-results');
 const notificationElement = document.getElementById('notification');
 
+let myTeamName = '';
+
 startDraftButton.addEventListener('click', () => {
   const numPlayers = parseInt(numPlayersInput.value);
   if (numPlayers >= 2 && numPlayers <= 12) {
@@ -27,6 +29,7 @@ startDraftButton.addEventListener('click', () => {
 submitTeamNameButton.addEventListener('click', () => {
   const teamName = teamNameInput.value.trim();
   if (teamName) {
+    myTeamName = teamName;
     socket.emit('set_team_name', teamName);
     teamNameInput.value = '';
     submitTeamNameButton.disabled = true;
@@ -70,6 +73,10 @@ socket.on('player_drafted', ({ player, draftedBy, remainingPlayers, nextTeam }) 
     Drafted by: <span class="team-name">${draftedBy}</span>
   `;
   draftedPlayersElement.appendChild(draftedPlayerElement);
+
+  if (draftedBy === myTeamName) {
+    hideNotification();
+  }
 });
 
 socket.on('draft_complete', (draftedPlayers) => {
@@ -89,9 +96,14 @@ socket.on('draft_error', (errorMessage) => {
   alert(`Draft error: ${errorMessage}`);
 });
 
-socket.on('turn_notification', (teamName) => {
-  showNotification(`It's ${teamName}'s turn to draft!`);
+socket.on('your_turn', () => {
+  showNotification("Your turn to pick");
   playNotificationSound();
+});
+
+socket.on('other_turn', (teamName) => {
+  hideNotification();
+  updateCurrentPick(teamName);
 });
 
 function draftPlayer(playerIndex) {
@@ -113,10 +125,11 @@ function updateCurrentPick(currentTeam) {
 
 function showNotification(message) {
   notificationElement.textContent = message;
-  notificationElement.classList.add('show');
-  setTimeout(() => {
-    notificationElement.classList.remove('show');
-  }, 5000);
+  notificationElement.style.display = 'block';
+}
+
+function hideNotification() {
+  notificationElement.style.display = 'none';
 }
 
 function playNotificationSound() {
