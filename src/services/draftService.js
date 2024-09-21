@@ -57,6 +57,11 @@ class DraftService {
   isDraftComplete() {
     return this.players.length === 0;
   }
+  getTeamPlayers(teamName) {
+    return this.draftedPlayers.filter(dp => dp.draftedBy === teamName).map(dp => dp.player);
+  }
 }
+
+
 
 module.exports = DraftService;

@@ -45,7 +45,6 @@ io.on('connection', (socket) => {
   });
 
   socket.on('set_team_name', (teamName) => {
-    // Check if the team name is already taken
     if (teamNames.includes(teamName)) {
       socket.emit('team_name_error', 'This team name is already taken. Please choose a different name.');
       return;
@@ -82,7 +81,11 @@ io.on('connection', (socket) => {
       });
 
       if (draftService.isDraftComplete()) {
-        io.emit('draft_complete', draftService.getDraftedPlayers());
+        io.emit('draft_complete');
+        for (const [socketId, teamName] of socketToTeam.entries()) {
+          const teamPlayers = draftService.getTeamPlayers(teamName);
+          io.to(socketId).emit('team_results', teamPlayers);
+        }
       } else {
         notifyCurrentTeam();
       }

@@ -39,14 +39,14 @@ submitTeamNameButton.addEventListener('click', () => {
   }
 });
 
-socket.on('show_team_naming', () => {
-  draftSetup.style.display = 'none';
-  teamNamingArea.style.display = 'block';
-});
-
 socket.on('team_name_error', (errorMessage) => {
   alert(errorMessage);
   submitTeamNameButton.disabled = false;
+});
+
+socket.on('show_team_naming', () => {
+  draftSetup.style.display = 'none';
+  teamNamingArea.style.display = 'block';
 });
 
 socket.on('team_ready', (teamName) => {
@@ -84,19 +84,20 @@ socket.on('player_drafted', ({ player, draftedBy, remainingPlayers, nextTeam }) 
   isMyTurn = false;
 });
 
-socket.on('draft_complete', (draftedPlayers) => {
+socket.on('draft_complete', () => {
   draftArea.style.display = 'none';
   draftComplete.style.display = 'block';
-  
-  finalResultsElement.innerHTML = draftedPlayers.map(({ player, draftedBy }) => 
-    `<div class="player-card">
-      <strong>${player.name}</strong><br>
-      Position: ${player.position}<br>
-      Drafted by: <span class="team-name">${draftedBy}</span>
-    </div>`
-  ).join('');
-
   showNotification("Draft completed");
+});
+
+socket.on('team_results', (teamPlayers) => {
+  finalResultsElement.innerHTML = `<h3>Your Team (${myTeamName}):</h3>` + 
+    teamPlayers.map(player => 
+      `<div class="player-card">
+        <strong>${player.name}</strong><br>
+        Position: ${player.position}
+      </div>`
+    ).join('');
 });
 
 socket.on('draft_error', (errorMessage) => {
@@ -121,7 +122,6 @@ function draftPlayer(playerIndex) {
   if (isMyTurn) {
     socket.emit('draft_player', playerIndex);
   }
-  // If it's not the user's turn, do nothing (no alert)
 }
 
 function updateAvailablePlayers(players) {
