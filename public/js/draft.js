@@ -16,6 +16,7 @@ const finalResultsElement = document.getElementById('final-results');
 const notificationElement = document.getElementById('notification');
 
 let myTeamName = '';
+let isMyTurn = false;
 
 startDraftButton.addEventListener('click', () => {
   const numPlayers = parseInt(numPlayersInput.value);
@@ -74,9 +75,8 @@ socket.on('player_drafted', ({ player, draftedBy, remainingPlayers, nextTeam }) 
   `;
   draftedPlayersElement.appendChild(draftedPlayerElement);
 
-  if (draftedBy === myTeamName) {
-    hideNotification();
-  }
+  hideNotification();
+  isMyTurn = false;
 });
 
 socket.on('draft_complete', (draftedPlayers) => {
@@ -101,20 +101,26 @@ socket.on('draft_error', (errorMessage) => {
 socket.on('your_turn', () => {
   showNotification("Your turn to pick");
   playNotificationSound();
+  isMyTurn = true;
 });
 
 socket.on('other_turn', (teamName) => {
   hideNotification();
   updateCurrentPick(teamName);
+  isMyTurn = false;
 });
 
 function draftPlayer(playerIndex) {
-  socket.emit('draft_player', playerIndex);
+  if (isMyTurn) {
+    socket.emit('draft_player', playerIndex);
+  } else {
+    alert('It is not your turn to pick');
+  }
 }
 
 function updateAvailablePlayers(players) {
   availablePlayersElement.innerHTML = players.map((player, index) => 
-    `<div class="player-card" onclick="draftPlayer(${index})">
+    `<div class="player-card ${isMyTurn ? 'clickable' : ''}" onclick="draftPlayer(${index})">
       <strong>${player.name}</strong><br>
       Position: ${player.position}
     </div>`

@@ -196,6 +196,7 @@ input[type="text"] {
 ::-webkit-scrollbar-thumb:hover {
   background: #5600e8;
 }
+
 #notification {
   position: fixed;
   top: 20px;
@@ -204,8 +205,8 @@ input[type="text"] {
   color: white;
   padding: 15px;
   border-radius: 5px;
-  display: none;
   z-index: 1000;
+  display: none;
 }
 
 #notification.show {
@@ -221,26 +222,4 @@ input[type="text"] {
 @keyframes fadeOut {
   from {opacity: 1;}
   to {opacity: 0;}
-}
-#notification {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  background-color: #4CAF50;
-  color: white;
-  padding: 15px;
-  border-radius: 5px;
-  z-index: 1000;
-  display: none;
-}
-#notification {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  background-color: #4CAF50;
-  color: white;
-  padding: 15px;
-  border-radius: 5px;
-  z-index: 1000;
-  display: none;
 }
