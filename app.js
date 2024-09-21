@@ -49,7 +49,11 @@ io.on('connection', (socket) => {
     if (teamNames.length === expectedTeamCount) {
       draftService = new DraftService([...players]);
       draftService.initializeDraft(expectedTeamCount, teamNames);
-      io.emit('all_teams_ready', teamNames);
+      io.emit('all_teams_ready', {
+        teamNames: teamNames,
+        players: draftService.getRemainingPlayers(),
+        currentTeam: draftService.getCurrentPickTeam()
+      });
     }
   });
 
@@ -62,7 +66,8 @@ io.on('connection', (socket) => {
       io.emit('player_drafted', {
         player: draftedPlayer,
         draftedBy: currentTeam,
-        remainingPlayers: remainingPlayers
+        remainingPlayers: remainingPlayers,
+        nextTeam: draftService.getCurrentPickTeam()
       });
 
       if (draftService.isDraftComplete()) {

@@ -46,34 +46,29 @@ socket.on('team_ready', (teamName) => {
   teamList.appendChild(teamElement);
 });
 
-socket.on('all_teams_ready', (teamNames) => {
+socket.on('all_teams_ready', ({ teamNames, players, currentTeam }) => {
   teamNamingArea.style.display = 'none';
   draftArea.style.display = 'block';
   
   draftOrderElement.innerHTML = '<h3>Draft Order:</h3>' + 
     teamNames.map(team => `<div class="team-name">${team}</div>`).join('');
+  
+  updateAvailablePlayers(players);
+  updateCurrentPick(currentTeam);
 });
 
-socket.on('player_drafted', ({ player, draftedBy, remainingPlayers }) => {
-  currentPickElement.innerHTML = `<h3>Current Pick: <span class="current-team">${draftedBy}</span></h3>`;
+socket.on('player_drafted', ({ player, draftedBy, remainingPlayers, nextTeam }) => {
+  updateCurrentPick(nextTeam);
+  updateAvailablePlayers(remainingPlayers);
   
-  availablePlayersElement.innerHTML = remainingPlayers.map((player, index) => 
-    `<div class="player-card" onclick="draftPlayer(${index})">
-      <strong>${player.name}</strong><br>
-      Position: ${player.position}
-    </div>`
-  ).join('');
-  
-  if (player) {
-    const draftedPlayerElement = document.createElement('div');
-    draftedPlayerElement.classList.add('player-card');
-    draftedPlayerElement.innerHTML = `
-      <strong>${player.name}</strong><br>
-      Position: ${player.position}<br>
-      Drafted by: <span class="team-name">${draftedBy}</span>
-    `;
-    draftedPlayersElement.appendChild(draftedPlayerElement);
-  }
+  const draftedPlayerElement = document.createElement('div');
+  draftedPlayerElement.classList.add('player-card');
+  draftedPlayerElement.innerHTML = `
+    <strong>${player.name}</strong><br>
+    Position: ${player.position}<br>
+    Drafted by: <span class="team-name">${draftedBy}</span>
+  `;
+  draftedPlayersElement.appendChild(draftedPlayerElement);
 });
 
 socket.on('draft_complete', (draftedPlayers) => {
@@ -95,4 +90,17 @@ socket.on('draft_error', (errorMessage) => {
 
 function draftPlayer(playerIndex) {
   socket.emit('draft_player', playerIndex);
+}
+
+function updateAvailablePlayers(players) {
+  availablePlayersElement.innerHTML = players.map((player, index) => 
+    `<div class="player-card" onclick="draftPlayer(${index})">
+      <strong>${player.name}</strong><br>
+      Position: ${player.position}
+    </div>`
+  ).join('');
+}
+
+function updateCurrentPick(currentTeam) {
+  currentPickElement.innerHTML = `<h3>Current Pick: <span class="current-team">${currentTeam}</span></h3>`;
 }
