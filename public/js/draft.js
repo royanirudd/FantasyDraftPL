@@ -13,6 +13,9 @@ const currentPickElement = document.getElementById('current-pick');
 const availablePlayersElement = document.getElementById('player-list');
 const draftedPlayersElement = document.getElementById('draft-list');
 const finalResultsElement = document.getElementById('final-results');
+const notificationElement = document.getElementById('notification');
+
+let myTeamName = '';
 
 startDraftButton.addEventListener('click', () => {
   const numPlayers = parseInt(numPlayersInput.value);
@@ -26,6 +29,7 @@ startDraftButton.addEventListener('click', () => {
 submitTeamNameButton.addEventListener('click', () => {
   const teamName = teamNameInput.value.trim();
   if (teamName) {
+    myTeamName = teamName;
     socket.emit('set_team_name', teamName);
     teamNameInput.value = '';
     submitTeamNameButton.disabled = true;
@@ -69,6 +73,10 @@ socket.on('player_drafted', ({ player, draftedBy, remainingPlayers, nextTeam }) 
     Drafted by: <span class="team-name">${draftedBy}</span>
   `;
   draftedPlayersElement.appendChild(draftedPlayerElement);
+
+  if (draftedBy === myTeamName) {
+    hideNotification();
+  }
 });
 
 socket.on('draft_complete', (draftedPlayers) => {
@@ -88,6 +96,16 @@ socket.on('draft_error', (errorMessage) => {
   alert(`Draft error: ${errorMessage}`);
 });
 
+socket.on('your_turn', () => {
+  showNotification("Your turn to pick");
+  playNotificationSound();
+});
+
+socket.on('other_turn', (teamName) => {
+  hideNotification();
+  updateCurrentPick(teamName);
+});
+
 function draftPlayer(playerIndex) {
   socket.emit('draft_player', playerIndex);
 }
@@ -103,4 +121,18 @@ function updateAvailablePlayers(players) {
 
 function updateCurrentPick(currentTeam) {
   currentPickElement.innerHTML = `<h3>Current Pick: <span class="current-team">${currentTeam}</span></h3>`;
+}
+
+function showNotification(message) {
+  notificationElement.textContent = message;
+  notificationElement.style.display = 'block';
+}
+
+function hideNotification() {
+  notificationElement.style.display = 'none';
+}
+
+function playNotificationSound() {
+  const audio = new Audio('/sounds/notification.mp3');
+  audio.play();
 }

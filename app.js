@@ -24,6 +24,7 @@ let draftService;
 let players;
 let expectedTeamCount = 0;
 let teamNames = [];
+let socketToTeam = new Map();
 
 io.on('connection', (socket) => {
   console.log('A user connected');
@@ -35,6 +36,7 @@ io.on('connection', (socket) => {
       }
       expectedTeamCount = numPlayers;
       teamNames = [];
+      socketToTeam.clear();
       io.emit('show_team_naming');
     } catch (error) {
       console.error('Error starting draft:', error);
@@ -45,6 +47,7 @@ io.on('connection', (socket) => {
   socket.on('set_team_name', (teamName) => {
     teamNames.push(teamName);
     socket.teamName = teamName;
+    socketToTeam.set(socket.id, teamName);
     io.emit('team_ready', teamName);
     
     if (teamNames.length === expectedTeamCount) {
@@ -55,6 +58,8 @@ io.on('connection', (socket) => {
         players: draftService.getRemainingPlayers(),
         currentTeam: draftService.getCurrentPickTeam()
       });
+      // Send initial turn notification
+      notifyCurrentTeam();
     }
   });
 
@@ -70,6 +75,9 @@ io.on('connection', (socket) => {
         remainingPlayers: remainingPlayers,
         nextTeam: draftService.getCurrentPickTeam()
       });
+
+      // Notify the next team
+      notifyCurrentTeam();
 
       if (draftService.isDraftComplete()) {
         io.emit('draft_complete', draftService.getDraftedPlayers());
@@ -89,8 +97,20 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     console.log('User disconnected');
+    socketToTeam.delete(socket.id);
   });
 });
+
+function notifyCurrentTeam() {
+  const currentTeam = draftService.getCurrentPickTeam();
+  for (const [socketId, teamName] of socketToTeam.entries()) {
+    if (teamName === currentTeam) {
+      io.to(socketId).emit('your_turn');
+    } else {
+      io.to(socketId).emit('other_turn', currentTeam);
+    }
+  }
+}
 
 const port = process.env.PORT || 3000;
 http.listen(port, () => {
