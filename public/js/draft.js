@@ -90,6 +90,8 @@ socket.on('draft_complete', (draftedPlayers) => {
       Drafted by: <span class="team-name">${draftedBy}</span>
     </div>`
   ).join('');
+
+  showNotification("Draft completed");
 });
 
 socket.on('draft_error', (errorMessage) => {
