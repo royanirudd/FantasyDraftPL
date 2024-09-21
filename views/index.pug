@@ -1,20 +1,27 @@
 extends layout
 
 block content
-  h1= title
+  h1.title Fantasy Draft PL
   #draft-container
     #draft-setup
-      h2 Start Draft
-      label(for="num-players") Number of Players:
-      input#num-players(type="number", min="2", max="7", value="4")
-      button#start-draft Start Draft
+      h2 Start New Draft
+      .form-group
+        label(for="num-players") Number of Teams:
+        input#num-players(type="number", min="2", max="12", value="8")
+      button#start-draft.btn Start Draft
 
     #draft-area(style="display: none;")
       h2 Draft in Progress
-      #draft-order
-      #current-pick
-      #available-players
-      #drafted-players
+      #draft-info
+        #draft-order
+        #current-pick
+      .draft-columns
+        #available-players
+          h3 Available Players
+          #player-list
+        #drafted-players
+          h3 Drafted Players
+          #draft-list
 
   #draft-complete(style="display: none;")
     h2 Draft Complete

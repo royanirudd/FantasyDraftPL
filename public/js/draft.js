@@ -7,16 +7,16 @@ const startDraftButton = document.getElementById('start-draft');
 const numPlayersInput = document.getElementById('num-players');
 const draftOrderElement = document.getElementById('draft-order');
 const currentPickElement = document.getElementById('current-pick');
-const availablePlayersElement = document.getElementById('available-players');
-const draftedPlayersElement = document.getElementById('drafted-players');
+const availablePlayersElement = document.getElementById('player-list');
+const draftedPlayersElement = document.getElementById('draft-list');
 const finalResultsElement = document.getElementById('final-results');
 
 startDraftButton.addEventListener('click', () => {
   const numPlayers = parseInt(numPlayersInput.value);
-  if (numPlayers >= 2 && numPlayers <= 7) {
+  if (numPlayers >= 2 && numPlayers <= 12) {
     socket.emit('start_draft', numPlayers);
   } else {
-    alert('Please enter a number of players between 2 and 7');
+    alert('Please enter a number of teams between 2 and 12');
   }
 });
 
@@ -24,20 +24,32 @@ socket.on('draft_started', (draftOrder) => {
   draftSetup.style.display = 'none';
   draftArea.style.display = 'block';
   
-  draftOrderElement.innerHTML = '<h3>Draft Order:</h3>' + draftOrder.map(player => `<div>Team ${player}</div>`).join('');
+  draftOrderElement.innerHTML = '<h3>Draft Order:</h3>' + 
+    draftOrder.map(player => `<div class="team-name">Team ${player}</div>`).join('');
 });
 
 socket.on('player_drafted', ({ player, draftedBy, remainingPlayers }) => {
-  currentPickElement.innerHTML = `<h3>Current Pick: Team ${draftedBy}</h3>`;
+  currentPickElement.innerHTML = `<h3>Current Pick: <span class="current-team">Team ${draftedBy}</span></h3>`;
   
-  availablePlayersElement.innerHTML = '<h3>Available Players:</h3>' + remainingPlayers.map((player, index) => 
-    `<div class="player-card" onclick="draftPlayer(${index})">${player.name} (${player.position})</div>`
+  availablePlayersElement.innerHTML = remainingPlayers.map((player, index) => 
+    `<div class="player-card" onclick="draftPlayer(${index})">
+      <strong>${player.name}</strong><br>
+      Position: ${player.position}<br>
+      Team: ${player.team}
+    </div>`
   ).join('');
   
-  const draftedPlayerElement = document.createElement('div');
-  draftedPlayerElement.classList.add('player-card');
-  draftedPlayerElement.textContent = `Team ${draftedBy}: ${player.name} (${player.position})`;
-  draftedPlayersElement.appendChild(draftedPlayerElement);
+  if (player) {
+    const draftedPlayerElement = document.createElement('div');
+    draftedPlayerElement.classList.add('player-card');
+    draftedPlayerElement.innerHTML = `
+      <strong>${player.name}</strong><br>
+      Position: ${player.position}<br>
+      Team: ${player.team}<br>
+      Drafted by: <span class="team-name">Team ${draftedBy}</span>
+    `;
+    draftedPlayersElement.appendChild(draftedPlayerElement);
+  }
 });
 
 socket.on('draft_complete', (draftedPlayers) => {
@@ -45,7 +57,12 @@ socket.on('draft_complete', (draftedPlayers) => {
   draftComplete.style.display = 'block';
   
   finalResultsElement.innerHTML = draftedPlayers.map(({ player, draftedBy }) => 
-    `<div>Team ${draftedBy}: ${player.name} (${player.position})</div>`
+    `<div class="player-card">
+      <strong>${player.name}</strong><br>
+      Position: ${player.position}<br>
+      Team: ${player.team}<br>
+      Drafted by: <span class="team-name">Team ${draftedBy}</span>
+    </div>`
   ).join('');
 });
 
