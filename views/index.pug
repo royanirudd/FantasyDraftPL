@@ -1,40 +1,40 @@
-extends layout
+doctype html
+html
+  head
+    title Fantasy Premier League Draft
+    link(rel='stylesheet', href='/css/style.css')
+  body
+    h1 Fantasy Premier League Draft
 
-block content
-  h1.title Fantasy Draft PL
-  #draft-container
     #draft-setup
-      h2 Start New Draft
-      .form-group
-        label(for="num-players") Number of Teams:
-        input#num-players(type="number", min="2", max="12", value="8")
-      button#start-draft.btn Start Draft
+      h2 Start Draft
+      label(for='num-players') Number of Teams:
+      input#num-players(type='number', min='2', max='12', value='4')
+      button#start-draft Start Draft
 
-    #team-naming-area(style="display: none;")
-      h2 Name Your Team
-      .form-group
-        label(for="team-name") Team Name:
-        input#team-name(type="text")
-      button#submit-team-name.btn Submit Team Name
+    #team-naming-area(style='display: none;')
+      h2 Enter Team Name
+      input#team-name(type='text', placeholder='Enter your team name')
+      button#submit-team-name Submit
       h3 Teams Ready:
       ul#team-list
 
-    #draft-area(style="display: none;")
-      h2 Draft in Progress
-      #draft-info
-        #draft-order
-        #current-pick
-      .draft-columns
-        #available-players
-          h3 Available Players
-          #player-list
-        #drafted-players
-          h3 Drafted Players
-          #draft-list
+    #draft-area(style='display: none;')
+      #draft-order
+      #current-pick
+      #player-list
+      #draft-list
+      
+      #chat-area
+        #chat-messages
+        form#chat-form
+          input#chat-input(type='text', placeholder='Type a message...')
+          button(type='submit') Send
 
-  #draft-complete(style="display: none;")
-    h2 Draft Complete
-    #final-results
+    #draft-complete(style='display: none;')
+      h2 Draft Complete
+      #final-results
 
-block scripts
-  script(src='/js/draft.js')
+    script(src='/socket.io/socket.io.js')
+    script(src='/js/draft.js')
+    script(src='/js/chat.js')

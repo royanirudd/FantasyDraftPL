@@ -44,6 +44,7 @@ io.on('connection', (socket) => {
 
   socket.on('set_team_name', (teamName) => {
     teamNames.push(teamName);
+    socket.teamName = teamName;
     io.emit('team_ready', teamName);
     
     if (teamNames.length === expectedTeamCount) {
@@ -77,6 +78,13 @@ io.on('connection', (socket) => {
       console.error('Error drafting player:', error);
       socket.emit('draft_error', 'Error drafting player');
     }
+  });
+
+  socket.on('chat_message', (message) => {
+    io.emit('chat_message', {
+      teamName: socket.teamName,
+      message: message
+    });
   });
 
   socket.on('disconnect', () => {
