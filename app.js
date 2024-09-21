@@ -45,6 +45,11 @@ io.on('connection', (socket) => {
   });
 
   socket.on('set_team_name', (teamName) => {
+    if (teamNames.includes(teamName)) {
+      socket.emit('team_name_error', 'This team name is already taken. Please choose a different name.');
+      return;
+    }
+
     teamNames.push(teamName);
     socket.teamName = teamName;
     socketToTeam.set(socket.id, teamName);
@@ -58,7 +63,6 @@ io.on('connection', (socket) => {
         players: draftService.getRemainingPlayers(),
         currentTeam: draftService.getCurrentPickTeam()
       });
-      // Send initial turn notification
       notifyCurrentTeam();
     }
   });
@@ -76,11 +80,14 @@ io.on('connection', (socket) => {
         nextTeam: draftService.getCurrentPickTeam()
       });
 
-      // Notify the next team
-      notifyCurrentTeam();
-
       if (draftService.isDraftComplete()) {
-        io.emit('draft_complete', draftService.getDraftedPlayers());
+        io.emit('draft_complete');
+        for (const [socketId, teamName] of socketToTeam.entries()) {
+          const teamPlayers = draftService.getTeamPlayers(teamName);
+          io.to(socketId).emit('team_results', teamPlayers);
+        }
+      } else {
+        notifyCurrentTeam();
       }
     } catch (error) {
       console.error('Error drafting player:', error);
