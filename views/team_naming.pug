@@ -1,0 +1,13 @@
+extends layout
+
+block content
+  h1 Name Your Team
+  .form-group
+    label(for="team-name") Team Name:
+    input#team-name(type="text")
+  button#submit-team-name.btn Submit Team Name
+  h3 Teams Ready:
+  ul#team-list
+
+block scripts
+  script(src='/js/draft.js')

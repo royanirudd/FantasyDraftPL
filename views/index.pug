@@ -10,6 +10,15 @@ block content
         input#num-players(type="number", min="2", max="12", value="8")
       button#start-draft.btn Start Draft
 
+    #team-naming-area(style="display: none;")
+      h2 Name Your Team
+      .form-group
+        label(for="team-name") Team Name:
+        input#team-name(type="text")
+      button#submit-team-name.btn Submit Team Name
+      h3 Teams Ready:
+      ul#team-list
+
     #draft-area(style="display: none;")
       h2 Draft in Progress
       #draft-info

@@ -1,10 +1,13 @@
 const socket = io();
 
 const draftSetup = document.getElementById('draft-setup');
+const teamNamingArea = document.getElementById('team-naming-area');
 const draftArea = document.getElementById('draft-area');
 const draftComplete = document.getElementById('draft-complete');
 const startDraftButton = document.getElementById('start-draft');
 const numPlayersInput = document.getElementById('num-players');
+const teamNameInput = document.getElementById('team-name');
+const submitTeamNameButton = document.getElementById('submit-team-name');
 const draftOrderElement = document.getElementById('draft-order');
 const currentPickElement = document.getElementById('current-pick');
 const availablePlayersElement = document.getElementById('player-list');
@@ -20,22 +23,44 @@ startDraftButton.addEventListener('click', () => {
   }
 });
 
-socket.on('draft_started', (draftOrder) => {
+submitTeamNameButton.addEventListener('click', () => {
+  const teamName = teamNameInput.value.trim();
+  if (teamName) {
+    socket.emit('set_team_name', teamName);
+    teamNameInput.value = '';
+    submitTeamNameButton.disabled = true;
+  } else {
+    alert('Please enter a valid team name');
+  }
+});
+
+socket.on('show_team_naming', () => {
   draftSetup.style.display = 'none';
+  teamNamingArea.style.display = 'block';
+});
+
+socket.on('team_ready', (teamName) => {
+  const teamList = document.getElementById('team-list');
+  const teamElement = document.createElement('li');
+  teamElement.textContent = teamName;
+  teamList.appendChild(teamElement);
+});
+
+socket.on('all_teams_ready', (teamNames) => {
+  teamNamingArea.style.display = 'none';
   draftArea.style.display = 'block';
   
   draftOrderElement.innerHTML = '<h3>Draft Order:</h3>' + 
-    draftOrder.map(player => `<div class="team-name">Team ${player}</div>`).join('');
+    teamNames.map(team => `<div class="team-name">${team}</div>`).join('');
 });
 
 socket.on('player_drafted', ({ player, draftedBy, remainingPlayers }) => {
-  currentPickElement.innerHTML = `<h3>Current Pick: <span class="current-team">Team ${draftedBy}</span></h3>`;
+  currentPickElement.innerHTML = `<h3>Current Pick: <span class="current-team">${draftedBy}</span></h3>`;
   
   availablePlayersElement.innerHTML = remainingPlayers.map((player, index) => 
     `<div class="player-card" onclick="draftPlayer(${index})">
       <strong>${player.name}</strong><br>
-      Position: ${player.position}<br>
-      Team: ${player.team}
+      Position: ${player.position}
     </div>`
   ).join('');
   
@@ -45,8 +70,7 @@ socket.on('player_drafted', ({ player, draftedBy, remainingPlayers }) => {
     draftedPlayerElement.innerHTML = `
       <strong>${player.name}</strong><br>
       Position: ${player.position}<br>
-      Team: ${player.team}<br>
-      Drafted by: <span class="team-name">Team ${draftedBy}</span>
+      Drafted by: <span class="team-name">${draftedBy}</span>
     `;
     draftedPlayersElement.appendChild(draftedPlayerElement);
   }
@@ -60,8 +84,7 @@ socket.on('draft_complete', (draftedPlayers) => {
     `<div class="player-card">
       <strong>${player.name}</strong><br>
       Position: ${player.position}<br>
-      Team: ${player.team}<br>
-      Drafted by: <span class="team-name">Team ${draftedBy}</span>
+      Drafted by: <span class="team-name">${draftedBy}</span>
     </div>`
   ).join('');
 });

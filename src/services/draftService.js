@@ -6,15 +6,17 @@ class DraftService {
     this.draftOrder = [];
     this.currentPick = 0;
     this.draftedPlayers = [];
+    this.teamNames = [];
   }
 
-  initializeDraft(numPlayers) {
+  initializeDraft(numPlayers, teamNames) {
     this.draftOrder = this.generateRandomOrder(numPlayers);
+    this.teamNames = teamNames;
     logger.info(`Draft initialized with ${numPlayers} players`);
   }
 
   generateRandomOrder(numPlayers) {
-    const order = Array.from({ length: numPlayers }, (_, i) => i + 1);
+    const order = Array.from({ length: numPlayers }, (_, i) => i);
     for (let i = order.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [order[i], order[j]] = [order[j], order[i]];
@@ -22,8 +24,8 @@ class DraftService {
     return order;
   }
 
-  getCurrentPickPlayer() {
-    return this.draftOrder[this.currentPick % this.draftOrder.length];
+  getCurrentPickTeam() {
+    return this.teamNames[this.draftOrder[this.currentPick % this.draftOrder.length]];
   }
 
   draftPlayer(playerIndex) {
@@ -35,11 +37,11 @@ class DraftService {
     const draftedPlayer = this.players.splice(playerIndex, 1)[0];
     this.draftedPlayers.push({
       player: draftedPlayer,
-      draftedBy: this.getCurrentPickPlayer(),
+      draftedBy: this.getCurrentPickTeam(),
     });
 
     this.currentPick++;
-    logger.info(`Player ${draftedPlayer.name} drafted by team ${this.getCurrentPickPlayer()}`);
+    logger.info(`Player ${draftedPlayer.name} drafted by team ${this.getCurrentPickTeam()}`);
 
     return draftedPlayer;
   }

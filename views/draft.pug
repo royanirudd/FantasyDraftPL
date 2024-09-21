@@ -1,0 +1,81 @@
+extends layout
+
+block content
+  h1 Fantasy Draft PL
+  #draft-container
+    #players-list
+      h2 Available Players
+      ul#available-players
+    
+    #drafted-players
+      h2 Drafted Players
+      ul#drafted-players-list
+
+    #chat-container
+      h2 Draft Chat
+      #chat-messages
+      form#chat-form
+        input(type="text" id="chat-input" placeholder="Type a message...")
+        button(type="submit") Send
+
+  script(src="/socket.io/socket.io.js")
+  script.
+    const socket = io();
+    const availablePlayersList = document.getElementById('available-players');
+    const draftedPlayersList = document.getElementById('drafted-players-list');
+    const chatForm = document.getElementById('chat-form');
+    const chatInput = document.getElementById('chat-input');
+    const chatMessages = document.getElementById('chat-messages');
+
+    socket.on('player_drafted', (data) => {
+      updateAvailablePlayers(data.remainingPlayers);
+      updateDraftedPlayers(data.player, data.draftedBy);
+    });
+
+    socket.on('draft_complete', (draftedPlayers) => {
+      alert('Draft is complete!');
+      // You can add more logic here to show final results
+    });
+
+    socket.on('draft_error', (errorMessage) => {
+      alert('Draft error: ' + errorMessage);
+    });
+
+    socket.on('turn_notification', (teamName) => {
+      alert(`It's ${teamName}'s turn to draft!`);
+    });
+
+    function updateAvailablePlayers(players) {
+      availablePlayersList.innerHTML = '';
+      players.forEach((player, index) => {
+        const li = document.createElement('li');
+        li.textContent = `${player.name} - ${player.position}`;
+        li.onclick = () => draftPlayer(index);
+        availablePlayersList.appendChild(li);
+      });
+    }
+
+    function updateDraftedPlayers(player, draftedBy) {
+      const li = document.createElement('li');
+      li.textContent = `${draftedBy} drafted ${player.name} (${player.position})`;
+      draftedPlayersList.appendChild(li);
+    }
+
+    function draftPlayer(index) {
+      socket.emit('draft_player', index);
+    }
+
+    chatForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (chatInput.value) {
+        socket.emit('chat_message', chatInput.value);
+        chatInput.value = '';
+      }
+    });
+
+    socket.on('chat_message', (msg) => {
+      const messageElement = document.createElement('div');
+      messageElement.textContent = msg;
+      chatMessages.appendChild(messageElement);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    });

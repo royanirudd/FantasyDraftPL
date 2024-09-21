@@ -20,4 +20,8 @@ router.get('/', async (req, res) => {
   }
 });
 
+router.get('/team-naming', (req, res) => {
+  res.render('team_naming', { title: 'Name Your Team' });
+});
+
 module.exports = router;
