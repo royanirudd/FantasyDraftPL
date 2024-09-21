@@ -55,6 +55,8 @@ io.on('connection', (socket) => {
         players: draftService.getRemainingPlayers(),
         currentTeam: draftService.getCurrentPickTeam()
       });
+      // Send initial turn notification
+      io.emit('turn_notification', draftService.getCurrentPickTeam());
     }
   });
 
@@ -70,6 +72,9 @@ io.on('connection', (socket) => {
         remainingPlayers: remainingPlayers,
         nextTeam: draftService.getCurrentPickTeam()
       });
+
+      // Send turn notification for the next team
+      io.emit('turn_notification', draftService.getCurrentPickTeam());
 
       if (draftService.isDraftComplete()) {
         io.emit('draft_complete', draftService.getDraftedPlayers());

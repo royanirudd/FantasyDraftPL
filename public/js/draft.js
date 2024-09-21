@@ -13,6 +13,7 @@ const currentPickElement = document.getElementById('current-pick');
 const availablePlayersElement = document.getElementById('player-list');
 const draftedPlayersElement = document.getElementById('draft-list');
 const finalResultsElement = document.getElementById('final-results');
+const notificationElement = document.getElementById('notification');
 
 startDraftButton.addEventListener('click', () => {
   const numPlayers = parseInt(numPlayersInput.value);
@@ -88,6 +89,11 @@ socket.on('draft_error', (errorMessage) => {
   alert(`Draft error: ${errorMessage}`);
 });
 
+socket.on('turn_notification', (teamName) => {
+  showNotification(`It's ${teamName}'s turn to draft!`);
+  playNotificationSound();
+});
+
 function draftPlayer(playerIndex) {
   socket.emit('draft_player', playerIndex);
 }
@@ -103,4 +109,17 @@ function updateAvailablePlayers(players) {
 
 function updateCurrentPick(currentTeam) {
   currentPickElement.innerHTML = `<h3>Current Pick: <span class="current-team">${currentTeam}</span></h3>`;
+}
+
+function showNotification(message) {
+  notificationElement.textContent = message;
+  notificationElement.classList.add('show');
+  setTimeout(() => {
+    notificationElement.classList.remove('show');
+  }, 5000);
+}
+
+function playNotificationSound() {
+  const audio = new Audio('/sounds/notification.mp3');
+  audio.play();
 }
