@@ -45,6 +45,12 @@ io.on('connection', (socket) => {
   });
 
   socket.on('set_team_name', (teamName) => {
+    // Check if the team name is already taken
+    if (teamNames.includes(teamName)) {
+      socket.emit('team_name_error', 'This team name is already taken. Please choose a different name.');
+      return;
+    }
+
     teamNames.push(teamName);
     socket.teamName = teamName;
     socketToTeam.set(socket.id, teamName);

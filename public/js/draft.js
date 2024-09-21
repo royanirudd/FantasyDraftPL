@@ -44,6 +44,11 @@ socket.on('show_team_naming', () => {
   teamNamingArea.style.display = 'block';
 });
 
+socket.on('team_name_error', (errorMessage) => {
+  alert(errorMessage);
+  submitTeamNameButton.disabled = false;
+});
+
 socket.on('team_ready', (teamName) => {
   const teamList = document.getElementById('team-list');
   const teamElement = document.createElement('li');
