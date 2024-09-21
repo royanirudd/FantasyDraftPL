@@ -5,6 +5,7 @@ const socketIo = require('socket.io');
 const logger = require('./src/utils/logger');
 const { parseCsv } = require('./src/services/csvParser');
 const DraftService = require('./src/services/draftService');
+const createError = require('http-errors');
 
 const app = express();
 const server = http.createServer(app);
@@ -86,19 +87,23 @@ io.on('connection', (socket) => {
   });
 });
 
-// Error handling
-app.use((req, res, next) => {
-  const error = new Error('Not Found');
-  error.status = 404;
-  next(error);
+// Catch 404 and forward to error handler
+app.use(function(req, res, next) {
+  next(createError(404));
 });
 
-app.use((err, req, res, next) => {
+// Error handler
+app.use(function(err, req, res, next) {
+  // Set locals, only providing error in development
+  res.locals.message = err.message;
+  res.locals.error = req.app.get('env') === 'development' ? err : {};
+
+  // Log the error
+  logger.error('Application error:', err);
+
+  // Render the error page
   res.status(err.status || 500);
-  res.render('error', {
-    message: err.message,
-    error: app.get('env') === 'development' ? err : {},
-  });
+  res.render('error');
 });
 
 // Start server
