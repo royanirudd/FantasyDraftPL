@@ -102,23 +102,25 @@ socket.on('your_turn', () => {
   showNotification("Your turn to pick");
   playNotificationSound();
   isMyTurn = true;
+  updateAvailablePlayers(availablePlayersElement.players);
 });
 
 socket.on('other_turn', (teamName) => {
   hideNotification();
   updateCurrentPick(teamName);
   isMyTurn = false;
+  updateAvailablePlayers(availablePlayersElement.players);
 });
 
 function draftPlayer(playerIndex) {
   if (isMyTurn) {
     socket.emit('draft_player', playerIndex);
-  } else {
-    alert('It is not your turn to pick');
   }
+  // If it's not the user's turn, do nothing (no alert)
 }
 
 function updateAvailablePlayers(players) {
+  availablePlayersElement.players = players;
   availablePlayersElement.innerHTML = players.map((player, index) => 
     `<div class="player-card ${isMyTurn ? 'clickable' : ''}" onclick="draftPlayer(${index})">
       <strong>${player.name}</strong><br>
